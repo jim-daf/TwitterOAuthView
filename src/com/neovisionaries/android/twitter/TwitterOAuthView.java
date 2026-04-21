@@ -892,7 +892,12 @@ public class TwitterOAuthView extends WebView
             @Override
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error)
             {
-                handler.proceed();
+                // CWE-295: do NOT proceed on invalid certificates. This view
+                // hosts the Twitter OAuth authorization flow; silently
+                // trusting any cert lets a network attacker MITM the OAuth
+                // handshake and steal the request_token / verifier (and
+                // therefore the user's account access). Abort the request.
+                handler.cancel();
             }
 
 
